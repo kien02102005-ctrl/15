@@ -2498,7 +2498,7 @@
                     <td>
                         <select class="admin-edit-input" onchange="updateUserKPITypeDirect('${u.username}', this.value)">
                             <option value="staff" ${userType === 'staff' ? 'selected' : ''}>Bảng KPI Cán bộ / Nhân viên</option>
-                            <option value="leader" ${userType === 'leader' ? 'selected' : ''}>Bảng KPI Lãnh đạo</option>
+                            <option value="leader" ${userType === 'leader' ? 'selected' : ''}>Bảng KPI LÃNH ĐẠO</option>
                             <option value="cleaner" ${userType === 'cleaner' ? 'selected' : ''}>Bảng KPI Lao Công</option>
                         </select>
                     </td>
@@ -3178,7 +3178,7 @@
             }
         }
 
-        /* --- XUẤT FILE WORD KPI GIỐNG MẪU ĐÍNH KÈM CÓ BẢNG XẾP LOẠI TỰ CHẤM & ĐÁNH GIÁ --- */
+        /* --- XUẤT FILE WORD KPI GIỐNG MẪU ĐÍNH KÈM CÓ BẢNG XẾP LOẠI TỰ CHẤM & ĐÁNH GIÁ (ĐÃ SỬA LỖI MẤT TIÊU ĐỀ A, B, C) --- */
         function exportKPIWord() {
             if (!window.docx) {
                 alert("Thư viện xuất file Word chưa tải xong. Vui lòng thử lại!");
@@ -3310,6 +3310,27 @@
             const sectionsKey = presentSections.length > 0 ? presentSections : (userKpiType === 'cleaner' ? ['A', 'B'] : ['A', 'B', 'C']);
 
             sectionsKey.forEach(secKey => {
+                const secTitleText = sectionTitles[secKey] || `MỤC ${secKey}`;
+                const secMaxScore = sectionMaxScores[secKey] !== undefined ? sectionMaxScores[secKey] : 0;
+
+                // CHÈN HÀNG MỤC LỚN (A, B, C...) ĐỂ TRÁNH MẤT TIÊU ĐỀ TRONG FILE WORD
+                kpiRows.push(new TableRow({
+                    children: [
+                        new TableCell({
+                            width: { size: 60, type: WidthType.PERCENTAGE },
+                            borders: bordersCell,
+                            children: [new Paragraph({ children: [new TextRun({ text: `${secKey}. ${secTitleText.toUpperCase()}`, bold: true, font: fontTimes, size: 22 })] })]
+                        }),
+                        new TableCell({
+                            width: { size: 13, type: WidthType.PERCENTAGE },
+                            borders: bordersCell,
+                            children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: String(secMaxScore), bold: true, font: fontTimes, size: 22 })] })]
+                        }),
+                        new TableCell({ width: { size: 13, type: WidthType.PERCENTAGE }, borders: bordersCell, children: [new Paragraph({ text: "" })] }),
+                        new TableCell({ width: { size: 14, type: WidthType.PERCENTAGE }, borders: bordersCell, children: [new Paragraph({ text: "" })] })
+                    ]
+                }));
+
                 const subSections = kpiDataList.filter(item => item.section === secKey);
                 subSections.forEach(sub => {
                     kpiRows.push(new TableRow({
@@ -3317,7 +3338,7 @@
                             new TableCell({
                                 width: { size: 60, type: WidthType.PERCENTAGE },
                                 borders: bordersCell,
-                                children: [new Paragraph({ children: [new TextRun({ text: `${sub.code}. ${sub.title}`, bold: true, font: fontTimes, size: 22 })] })]
+                                children: [new Paragraph({ children: [new TextRun({ text: `   ${sub.code}. ${sub.title}`, bold: true, font: fontTimes, size: 22 })] })]
                             }),
                             new TableCell({
                                 width: { size: 13, type: WidthType.PERCENTAGE },
